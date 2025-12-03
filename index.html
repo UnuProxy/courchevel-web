@@ -45,7 +45,8 @@
       <main>
         <section id="about">
           <div class="section-title">About us</div>
-          <p class="section-intro">We curate bespoke alpine experiences in Courchevel and the Three Valleys. From private ski days and exclusive chalets to VIP transfers and après-ski access — we handle every detail, 24/7.</p>
+          <p class="section-intro">At Courchevel Luxury Concierge, we craft unforgettable alpine experiences tailored to your lifestyle. From the snowy peaks of Courchevel to the breathtaking expanse of the Three Valleys, our team curates seamless, high-end services designed around comfort, discretion, and excellence.</p>
+          <p class="section-intro">Whether you desire a private ski instructor, a hand-picked chalet, VIP airport transfers, gourmet dining reservations, or exclusive access to the most sought-after events and clubs, we handle every detail with precision. Our local expertise and trusted network ensure that every moment of your stay is effortless, refined, and truly exceptional — 24/7.</p>
         </section>
 
         <section id="services">
@@ -148,29 +149,34 @@
         <section id="contact">
           <div class="section-title">Contact us</div>
           <p class="section-intro">Share dates, the service you need, and preferences. We reply in minutes.</p>
-          <form>
-            <label>Name
-              <input type="text" name="name" placeholder="Your name">
-            </label>
-            <label>Dates
-              <input type="text" name="dates" placeholder="e.g. Feb 15-20">
-            </label>
-            <label>Desired service
-              <input type="text" name="service" placeholder="Ski, transfers, chalet...">
-            </label>
-            <label>Number of guests
-              <input type="number" name="guests" min="1" placeholder="e.g. 4">
-            </label>
-            <label>Estimated budget (optional)
-              <input type="text" name="budget" placeholder="Optional">
-            </label>
-            <label>Message / Comments
-              <textarea name="message" placeholder="Needs, timing, details"></textarea>
-            </label>
-            <div>
-              <button class="btn btn-primary" type="submit">Send request</button>
-            </div>
-          </form>
+          <div class="contact-card">
+            <form id="contact-form" class="contact-form">
+              <input type="hidden" name="_subject" value="New Courchevel concierge request">
+              <input type="hidden" name="source" value="Courchevel web contact">
+              <label>Name
+                <input type="text" name="name" placeholder="Your name" required>
+              </label>
+              <label>Dates
+                <input type="text" name="dates" placeholder="e.g. Feb 15-20" required>
+              </label>
+              <label>Desired service
+                <input type="text" name="service" placeholder="Ski, transfers, chalet..." required>
+              </label>
+              <label>Number of guests
+                <input type="number" name="guests" min="1" placeholder="e.g. 4" required>
+              </label>
+              <label>Estimated budget (optional)
+                <input type="text" name="budget" placeholder="Optional">
+              </label>
+              <label>Message / Comments
+                <textarea name="message" placeholder="Needs, timing, details"></textarea>
+              </label>
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Send request</button>
+              </div>
+            </form>
+            <div id="contact-status" class="form-status" aria-live="polite"></div>
+          </div>
           <div class="cta-foot">
             Available in Courchevel (Le Praz, 1550, 1650, 1850) and the Three Valleys. For immediate assistance: 📩 WhatsApp.
           </div>
@@ -287,6 +293,48 @@
       document.addEventListener('keyup', (e) => {
         if (e.key === 'Escape') {
           document.querySelectorAll('.modal.is-visible').forEach(closeModal);
+        }
+      });
+    })();
+
+    (function() {
+      const form = document.getElementById('contact-form');
+      const statusEl = document.getElementById('contact-status');
+      const BASIN_ENDPOINT = 'https://usebasin.com/f/34a5258d7b37';
+
+      if (!form || !statusEl) return;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        statusEl.textContent = 'Sending...';
+        statusEl.className = 'form-status';
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+          const res = await fetch(BASIN_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) throw new Error('Request failed');
+
+          statusEl.textContent = 'Request sent — we will reply shortly.';
+          statusEl.classList.add('success');
+          form.reset();
+        } catch (err) {
+          statusEl.textContent = 'Something went wrong. Please try again or WhatsApp us.';
+          statusEl.classList.add('error');
+        } finally {
+          if (submitBtn) submitBtn.disabled = false;
         }
       });
     })();
